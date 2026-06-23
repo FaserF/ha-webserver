@@ -1,0 +1,6 @@
+{
+  "name": "Webserver App",
+  "render_readme": true,
+  "zip_release": true,
+  "filename": "webserver_app.zip"
+}
