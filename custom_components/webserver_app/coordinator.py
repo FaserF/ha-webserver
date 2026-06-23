@@ -68,15 +68,22 @@ class WebserverAppDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                         "Addon %s returned 404, attempting auto-discovery of local addon slug prefix",
                         self.addon_slug,
                     )
-                    list_resp = await session.get("http://supervisor/addons", headers=headers)
+                    list_resp = await session.get(
+                        "http://supervisor/addons", headers=headers
+                    )
                     if list_resp.status == 200:
                         list_res = await list_resp.json()
                         addons = list_res.get("data", {}).get("addons", [])
                         for addon in addons:
                             s = addon.get("slug", "")
-                            if s.endswith(f"_{self.addon_slug}") or s == self.addon_slug:
+                            if (
+                                s.endswith(f"_{self.addon_slug}")
+                                or s == self.addon_slug
+                            ):
                                 _LOGGER.info(
-                                    "Auto-discovered installed slug '%s' matching target '%s'", s, self.addon_slug
+                                    "Auto-discovered installed slug '%s' matching target '%s'",
+                                    s,
+                                    self.addon_slug,
                                 )
                                 self.addon_slug = s
                                 url = f"http://supervisor/addons/{self.addon_slug}/info"
@@ -90,7 +97,9 @@ class WebserverAppDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 addon_info = result.get("data", {})
 
             if not addon_info:
-                raise UpdateFailed(f"Addon {self.addon_slug} not found in Supervisor response")
+                raise UpdateFailed(
+                    f"Addon {self.addon_slug} not found in Supervisor response"
+                )
 
             data.update(
                 {
@@ -112,10 +121,16 @@ class WebserverAppDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 if certfile:
                     cert_path = f"/ssl/{certfile}"
                     try:
-                        expiry = await self.hass.async_add_executor_job(get_cert_expiry, cert_path)
+                        expiry = await self.hass.async_add_executor_job(
+                            get_cert_expiry, cert_path
+                        )
                         if expiry:
                             data["ssl_expiry"] = expiry
-                            now = datetime.now(timezone.utc) if expiry.tzinfo else datetime.now()
+                            now = (
+                                datetime.now(timezone.utc)
+                                if expiry.tzinfo
+                                else datetime.now()
+                            )
                             data["ssl_days_remaining"] = (expiry - now).days
                     except Exception as err:
                         _LOGGER.debug("Could not read cert file: %s", err)
@@ -139,7 +154,9 @@ class WebserverAppDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 async with aiohttp.ClientSession() as session:
                     if "nginx" in self.addon_slug:
                         # Nginx (port 8080 as configured in nginx.sh)
-                        async with session.get(f"http://{hostname}:8080/nginx_status", ssl=False) as resp:
+                        async with session.get(
+                            f"http://{hostname}:8080/nginx_status", ssl=False
+                        ) as resp:
                             if resp.status == 200:
                                 text = await resp.text()
                                 # Active connections: 291
@@ -147,7 +164,9 @@ class WebserverAppDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                                 #  16630948 16630948 31070465
                                 # Reading: 6 Writing: 179 Waiting: 106
                                 lines = text.splitlines()
-                                data["active_connections"] = int(lines[0].split(":")[1].strip())
+                                data["active_connections"] = int(
+                                    lines[0].split(":")[1].strip()
+                                )
                                 req_line = lines[2].split()
                                 data["total_handled_requests"] = int(req_line[2])
                                 data["webserver_type"] = "nginx"
@@ -159,23 +178,33 @@ class WebserverAppDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                         ]
                         for url in urls_to_try:
                             try:
-                                async with session.get(url, ssl=False, allow_redirects=True) as resp:
+                                async with session.get(
+                                    url, ssl=False, allow_redirects=True
+                                ) as resp:
                                     if resp.status == 200:
                                         text = await resp.text()
                                         for line in text.splitlines():
                                             if line.startswith("Total Accesses:"):
-                                                data["total_accesses"] = int(line.split(":")[1])
+                                                data["total_accesses"] = int(
+                                                    line.split(":")[1]
+                                                )
                                             elif line.startswith("CPULoad:"):
-                                                data["cpu_load"] = float(line.split(":")[1])
+                                                data["cpu_load"] = float(
+                                                    line.split(":")[1]
+                                                )
                                             elif line.startswith("BusyWorkers:"):
-                                                data["active_connections"] = int(line.split(":")[1])
+                                                data["active_connections"] = int(
+                                                    line.split(":")[1]
+                                                )
                                         data["webserver_type"] = "apache"
                                         break
                             except Exception as e:
                                 _LOGGER.debug("Stats fetch failed for %s: %s", url, e)
                                 continue
         except Exception as err:
-            _LOGGER.debug("Could not fetch webserver stats for %s: %s", self.addon_slug, err)
+            _LOGGER.debug(
+                "Could not fetch webserver stats for %s: %s", self.addon_slug, err
+            )
 
     async def _fetch_addon_logs(self, data: dict[str, Any]) -> None:
         """Fetch and parse addon logs for errors."""
@@ -197,7 +226,11 @@ class WebserverAppDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                         lower_line = line.lower()
                         if "error" in lower_line:
                             error_lines.append(line)
-                        elif "warning" in lower_line or "warn " in lower_line or "warn:" in lower_line:
+                        elif (
+                            "warning" in lower_line
+                            or "warn " in lower_line
+                            or "warn:" in lower_line
+                        ):
                             warning_lines.append(line)
 
                     data["log_errors"] = len(error_lines)

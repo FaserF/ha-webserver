@@ -42,7 +42,9 @@ async def async_get_config_entry_diagnostics(
     entry: ConfigEntry,
 ) -> dict[str, Any]:
     """Return diagnostics for a config entry."""
-    coordinator: WebserverAppDataUpdateCoordinator | None = hass.data.get(DOMAIN, {}).get(entry.entry_id)
+    coordinator: WebserverAppDataUpdateCoordinator | None = hass.data.get(
+        DOMAIN, {}
+    ).get(entry.entry_id)
 
     diag: dict[str, Any] = {
         "config_entry": {

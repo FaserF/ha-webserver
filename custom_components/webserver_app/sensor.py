@@ -44,12 +44,18 @@ async def async_setup_entry(
     )
 
 
-class WebserverAppSensor(CoordinatorEntity[WebserverAppDataUpdateCoordinator], SensorEntity):
+class WebserverAppSensor(
+    CoordinatorEntity[WebserverAppDataUpdateCoordinator], SensorEntity
+):
     """Base class for Webserver App sensors."""
 
     _attr_has_entity_name = True
 
-    def __init__(self, coordinator: WebserverAppDataUpdateCoordinator, description: SensorEntityDescription) -> None:
+    def __init__(
+        self,
+        coordinator: WebserverAppDataUpdateCoordinator,
+        description: SensorEntityDescription,
+    ) -> None:
         """Initialize."""
         super().__init__(coordinator)
         self.entity_description = description
@@ -184,7 +190,9 @@ class WebserverAppRequestsSensor(WebserverAppSensor):
     @property
     def native_value(self) -> int | None:
         """Return the total number of requests."""
-        return self.coordinator.data.get("total_accesses") or self.coordinator.data.get("total_handled_requests")
+        return self.coordinator.data.get("total_accesses") or self.coordinator.data.get(
+            "total_handled_requests"
+        )
 
 
 class WebserverAppLogErrorsSensor(WebserverAppSensor):

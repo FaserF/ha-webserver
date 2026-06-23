@@ -25,7 +25,9 @@ async def async_setup_entry(
     async_add_entities([WebserverAppReloadButton(coordinator)])
 
 
-class WebserverAppReloadButton(CoordinatorEntity[WebserverAppDataUpdateCoordinator], ButtonEntity):
+class WebserverAppReloadButton(
+    CoordinatorEntity[WebserverAppDataUpdateCoordinator], ButtonEntity
+):
     """Button to reload the webserver (via addon restart for now)."""
 
     _attr_translation_key = "reload"
@@ -53,7 +55,9 @@ class WebserverAppReloadButton(CoordinatorEntity[WebserverAppDataUpdateCoordinat
         try:
             async with session.post(url, headers=headers) as resp:
                 if resp.status != 200:
-                    _LOGGER.error("Failed to restart addon %s: %s", self.addon_slug, resp.status)
+                    _LOGGER.error(
+                        "Failed to restart addon %s: %s", self.addon_slug, resp.status
+                    )
                 else:
                     _LOGGER.info("Addon %s restart signal sent", self.addon_slug)
         except Exception as err:

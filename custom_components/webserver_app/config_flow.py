@@ -39,7 +39,9 @@ class WebserverAppConfigFlow(ConfigFlow, domain=DOMAIN):
         self._addon_slug: str | None = None
         self._port: int = DEFAULT_PORT
 
-    async def async_step_user(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+    async def async_step_user(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
         """Handle the initial step."""
         _LOGGER.debug("ConfigFlow: async_step_user called")
         errors: dict[str, str] = {}
@@ -58,7 +60,9 @@ class WebserverAppConfigFlow(ConfigFlow, domain=DOMAIN):
                 async with async_timeout.timeout(10):
                     resp = await session.get(url, headers=headers)
                     if resp.status == 404:
-                        list_resp = await session.get("http://supervisor/addons", headers=headers)
+                        list_resp = await session.get(
+                            "http://supervisor/addons", headers=headers
+                        )
                         if list_resp.status == 200:
                             list_res = await list_resp.json()
                             addons = list_res.get("data", {}).get("addons", [])
@@ -87,7 +91,9 @@ class WebserverAppConfigFlow(ConfigFlow, domain=DOMAIN):
             if not errors:
                 await self.async_set_unique_id(f"{self._addon_slug}_{self._port}")
                 self._abort_if_unique_id_configured()
-                return self.async_create_entry(title=f"Webserver ({self._addon_slug})", data=user_input)
+                return self.async_create_entry(
+                    title=f"Webserver ({self._addon_slug})", data=user_input
+                )
 
         # Try to detect installed addons via Supervisor API
         detected_addons = []
@@ -102,7 +108,9 @@ class WebserverAppConfigFlow(ConfigFlow, domain=DOMAIN):
             headers = {"X-Supervisor-Token": token} if token else {}
 
             async with async_timeout.timeout(10):
-                _LOGGER.debug("ConfigFlow: Calling Supervisor API http://supervisor/addons")
+                _LOGGER.debug(
+                    "ConfigFlow: Calling Supervisor API http://supervisor/addons"
+                )
                 resp = await session.get("http://supervisor/addons", headers=headers)
                 _LOGGER.debug("ConfigFlow: Supervisor API status: %s", resp.status)
                 if resp.status == 200:
@@ -110,7 +118,9 @@ class WebserverAppConfigFlow(ConfigFlow, domain=DOMAIN):
                     data_node = result.get("data", result)
                     addons = data_node.get("addons", [])
 
-                    _LOGGER.debug("ConfigFlow: Supervisor API returned %s addons", len(addons))
+                    _LOGGER.debug(
+                        "ConfigFlow: Supervisor API returned %s addons", len(addons)
+                    )
 
                     for addon in addons:
                         slug = addon.get("slug", "")
@@ -120,12 +130,20 @@ class WebserverAppConfigFlow(ConfigFlow, domain=DOMAIN):
                         # We only match if the slug ends with the supported slug (e.g. local_apache2)
                         # or if it is exactly the supported slug.
                         for supported in SUPPORTED_ADDON_SLUGS:
-                            if (slug == supported or slug.endswith(f"_{supported}")) and is_installed:
-                                _LOGGER.debug("ConfigFlow: Detected installed supported addon: %s", slug)
+                            if (
+                                slug == supported or slug.endswith(f"_{supported}")
+                            ) and is_installed:
+                                _LOGGER.debug(
+                                    "ConfigFlow: Detected installed supported addon: %s",
+                                    slug,
+                                )
                                 detected_addons.append(slug)
                                 break
                 else:
-                    _LOGGER.debug("ConfigFlow: Failed to fetch addons from Supervisor: %s", resp.status)
+                    _LOGGER.debug(
+                        "ConfigFlow: Failed to fetch addons from Supervisor: %s",
+                        resp.status,
+                    )
         except Exception as err:
             _LOGGER.debug("ConfigFlow: Exception in detection: %s", err)
 
@@ -135,9 +153,9 @@ class WebserverAppConfigFlow(ConfigFlow, domain=DOMAIN):
 
         data_schema = vol.Schema(
             {
-                vol.Required(CONF_ADDON_SLUG, default=display_addons[0] if display_addons else ""): vol.In(
-                    display_addons
-                ),
+                vol.Required(
+                    CONF_ADDON_SLUG, default=display_addons[0] if display_addons else ""
+                ): vol.In(display_addons),
                 vol.Required(CONF_PORT, default=DEFAULT_PORT): cv.port,
             }
         )
@@ -149,7 +167,9 @@ class WebserverAppConfigFlow(ConfigFlow, domain=DOMAIN):
             description_placeholders={"detected": ", ".join(display_addons)},
         )
 
-    async def async_step_hassio(self, discovery_info: HassioServiceInfo) -> ConfigFlowResult:
+    async def async_step_hassio(
+        self, discovery_info: HassioServiceInfo
+    ) -> ConfigFlowResult:
         """Handle supervisor discovery."""
         slug = getattr(discovery_info, "slug", None)
         if not slug or slug not in SUPPORTED_ADDON_SLUGS:
@@ -161,7 +181,9 @@ class WebserverAppConfigFlow(ConfigFlow, domain=DOMAIN):
 
         return await self.async_step_hassio_confirm()
 
-    async def async_step_hassio_confirm(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+    async def async_step_hassio_confirm(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
         """Confirm hassio discovery."""
         if user_input is not None:
             return self.async_create_entry(
@@ -178,7 +200,9 @@ class WebserverAppConfigFlow(ConfigFlow, domain=DOMAIN):
         )
 
     @staticmethod
-    def async_get_options_flow(config_entry: ConfigEntry) -> WebserverAppOptionsFlowHandler:
+    def async_get_options_flow(
+        config_entry: ConfigEntry,
+    ) -> WebserverAppOptionsFlowHandler:
         """Get the options flow for this handler."""
         return WebserverAppOptionsFlowHandler()
 
@@ -186,7 +210,9 @@ class WebserverAppConfigFlow(ConfigFlow, domain=DOMAIN):
 class WebserverAppOptionsFlowHandler(OptionsFlow):
     """Handle options flow for Webserver App integration."""
 
-    async def async_step_init(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+    async def async_step_init(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
         """Manage the options."""
         if user_input is not None:
             return self.async_create_entry(title="", data=user_input)
