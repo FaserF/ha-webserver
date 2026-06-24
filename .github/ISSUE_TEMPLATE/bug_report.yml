@@ -18,7 +18,7 @@ body:
     attributes:
       label: Integration Version
       description: Which version of ha-webserver are you running? (HACS or integration page)
-      placeholder: e.g. v0.0.1
+      placeholder: e.g. v1.0.0
     validations:
       required: true
 
