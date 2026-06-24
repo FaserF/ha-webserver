@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import aiohttp
@@ -126,11 +126,7 @@ class WebserverAppDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                         )
                         if expiry:
                             data["ssl_expiry"] = expiry
-                            now = (
-                                datetime.now(timezone.utc)
-                                if expiry.tzinfo
-                                else datetime.now()
-                            )
+                            now = datetime.now(UTC) if expiry.tzinfo else datetime.now()
                             data["ssl_days_remaining"] = (expiry - now).days
                     except Exception as err:
                         _LOGGER.debug("Could not read cert file: %s", err)
