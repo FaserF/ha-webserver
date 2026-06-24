@@ -1,6 +1,7 @@
 # Webserver App (for Home Assistant)
 
 [![GitHub Release](https://img.shields.io/github/release/FaserF/ha-webserver.svg?style=flat-square)](https://github.com/FaserF/ha-webserver/releases)
+[![Downloads (Current release)](https://img.shields.io/github/downloads/FaserF/ha-webserver/latest/webserver_app.zip?label=Downloads%20(Current%20release)&style=flat-square)](https://github.com/FaserF/ha-webserver/releases)
 [![License](https://img.shields.io/github/license/FaserF/ha-webserver.svg?style=flat-square)](LICENSE)
 [![hacs](https://img.shields.io/badge/HACS-custom-orange.svg?style=flat-square)](https://hacs.xyz)
 [![Add to Home Assistant](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=webserver_app)
@@ -14,6 +15,22 @@ A native, lightweight Home Assistant integration designed to monitor and manage 
 
 ---
 
+---
+
+## ❤️ Support This Project
+
+> I maintain this integration in my **free time alongside my regular job** — bug hunting, new features, and testing on real hardware. Test devices cost money, and every donation helps me stay independent and free up more time for open-source work.
+>
+> Donations are completely voluntary — but the more support I receive, the less I depend on other income sources and the more time I can realistically invest into these GitHub projects. 💪
+
+<div align="center">
+
+[![GitHub Sponsors](https://img.shields.io/badge/Sponsor%20on-GitHub-%23EA4AAA?style=for-the-badge&logo=github-sponsors&logoColor=white)](https://github.com/sponsors/FaserF)&nbsp;&nbsp;
+[![PayPal](https://img.shields.io/badge/Donate%20via-PayPal-%2300457C?style=for-the-badge&logo=paypal&logoColor=white)](https://paypal.me/FaserF)
+
+</div>
+
+---
 ## 🧭 Quick Links
 
 | | | |

@@ -1,16 +1,16 @@
 {
   "domain": "webserver_app",
   "name": "Webserver App",
-  "version": "0.0.2-dev0",
-  "config_flow": true,
-  "documentation": "https://github.com/FaserF/ha-webserver",
-  "issue_tracker": "https://github.com/FaserF/ha-webserver/issues",
-  "dependencies": [
-    "hassio"
-  ],
   "codeowners": [
     "@FaserF"
   ],
+  "config_flow": true,
+  "dependencies": [
+    "hassio"
+  ],
+  "documentation": "https://github.com/FaserF/ha-webserver",
+  "integration_type": "hub",
   "iot_class": "local_polling",
-  "integration_type": "hub"
+  "issue_tracker": "https://github.com/FaserF/ha-webserver/issues",
+  "version": "0.0.2-dev0"
 }
