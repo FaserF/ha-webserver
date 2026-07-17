@@ -172,11 +172,20 @@ class WebserverAppConfigFlow(ConfigFlow, domain=DOMAIN):
     ) -> ConfigFlowResult:
         """Handle supervisor discovery."""
         slug = getattr(discovery_info, "slug", None)
-        if not slug or slug not in SUPPORTED_ADDON_SLUGS:
+        if not slug:
             return self.async_abort(reason="not_supported")
 
-        self._addon_slug = slug
-        await self.async_set_unique_id(f"{slug}_{DEFAULT_PORT}")
+        matched_slug = None
+        for supported in SUPPORTED_ADDON_SLUGS:
+            if slug == supported or slug.endswith(f"_{supported}"):
+                matched_slug = slug
+                break
+
+        if not matched_slug:
+            return self.async_abort(reason="not_supported")
+
+        self._addon_slug = matched_slug
+        await self.async_set_unique_id(f"{matched_slug}_{DEFAULT_PORT}")
         self._abort_if_unique_id_configured()
 
         return await self.async_step_hassio_confirm()

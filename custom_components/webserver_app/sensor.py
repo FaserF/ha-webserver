@@ -79,7 +79,7 @@ class WebserverAppSensor(
             identifiers={(DOMAIN, self.addon_slug)},
             name=self.addon_slug,
             manufacturer="FaserF",
-            model="Apache2/Nginx Addon",
+            model=coordinator.data.get("name") or "Apache2/Nginx HA App",
             sw_version=coordinator.data.get("version"),
             configuration_url=config_url,
         )
