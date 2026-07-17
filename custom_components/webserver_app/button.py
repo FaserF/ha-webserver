@@ -92,5 +92,7 @@ class WebserverAppResetLogsButton(
 
     async def async_press(self) -> None:
         """Handle the button press."""
-        _LOGGER.info("Resetting logged errors and warnings for addon %s", self.addon_slug)
+        _LOGGER.info(
+            "Resetting logged errors and warnings for addon %s", self.addon_slug
+        )
         self.coordinator.reset_logs()
