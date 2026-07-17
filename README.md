@@ -47,14 +47,15 @@ A native, lightweight Home Assistant integration designed to monitor and manage 
   - Zero manual YAML configuration needed.
 - **Comprehensive Telemetry Sensors**:
   - **Status**: Live operational tracker (`started`, `stopped`) with instant update notifications.
-  - **Version**: Tracks currently installed add-on version vs. newly available releases.
   - **Performance Stats**: Real-time extraction of active network connections, server load, total accesses, and handled HTTP requests.
+  - **Detailed Webserver Metrics**: Optionally enable sensors for detailed Nginx connections (`Reading`, `Writing`, `Waiting`) or Apache2 status (`Idle Workers`, `Throughput` in B/s, `Request Rate` in req/s, and `Uptime`).
   - **Log Diagnostics**: Proactively scans and aggregates critical add-on logs for `ERROR` and `WARNING` patterns.
 - **SSL Lifecycle Management**:
   - Automatically loads and analyzes active local certificates (e.g. via `/ssl/`).
   - Dedicated sensors expose absolute **SSL Expiration Date** alongside a countdown of **Remaining Valid Days**.
 - **Control & Recovery**:
   - **Reload Button**: Native button entity allowing immediate restarts of add-on containers straight from the entity detail view.
+  - **Log Reset Button**: Easily clear/dismiss accumulated log errors and warnings from the entities.
 - **Advanced Observability**:
   - Fully supports downloading JSON state maps directly inside Home Assistant via native **Diagnostics** integration.
 

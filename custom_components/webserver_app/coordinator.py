@@ -50,6 +50,19 @@ class WebserverAppDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         )
         self.entry = entry
         self.addon_slug = entry.data[CONF_ADDON_SLUG]
+        self._dismissed_logs: set[str] = set()
+
+    def reset_logs(self) -> None:
+        """Dismiss all current log errors and warnings."""
+        self._dismissed_logs.update(self.data.get("log_errors_list", []))
+        self._dismissed_logs.update(self.data.get("log_warnings_list", []))
+        if "log_errors" in self.data:
+            self.data["log_errors"] = 0
+            self.data["log_errors_list"] = []
+        if "log_warnings" in self.data:
+            self.data["log_warnings"] = 0
+            self.data["log_warnings_list"] = []
+        self.async_update_listeners()
 
     async def _async_update_data(self) -> dict[str, Any]:
         """Fetch data from the addon and webserver."""
@@ -57,7 +70,7 @@ class WebserverAppDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         session = async_get_clientsession(self.hass)
         headers = {"X-Supervisor-Token": token} if token else {}
 
-        data = {}
+        data: dict[str, Any] = {}
         try:
             # 1. Fetch Addon Info via Supervisor API
             url = f"http://supervisor/addons/{self.addon_slug}/info"
@@ -166,6 +179,15 @@ class WebserverAppDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                                 req_line = lines[2].split()
                                 data["total_handled_requests"] = int(req_line[2])
                                 data["webserver_type"] = "nginx"
+
+                                # Parse Nginx detailed states if present
+                                for line in lines:
+                                    if line.startswith("Reading:"):
+                                        parts = line.split()
+                                        if len(parts) >= 6:
+                                            data["nginx_reading"] = int(parts[1])
+                                            data["nginx_writing"] = int(parts[3])
+                                            data["nginx_waiting"] = int(parts[5])
                     else:
                         # Apache
                         urls_to_try = [
@@ -190,6 +212,22 @@ class WebserverAppDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                                                 )
                                             elif line.startswith("BusyWorkers:"):
                                                 data["active_connections"] = int(
+                                                    line.split(":")[1]
+                                                )
+                                            elif line.startswith("IdleWorkers:"):
+                                                data["apache_idle_workers"] = int(
+                                                    line.split(":")[1]
+                                                )
+                                            elif line.startswith("BytesPerSec:"):
+                                                data["apache_bytes_per_sec"] = float(
+                                                    line.split(":")[1]
+                                                )
+                                            elif line.startswith("ReqPerSec:"):
+                                                data["apache_req_per_sec"] = float(
+                                                    line.split(":")[1]
+                                                )
+                                            elif line.startswith("Uptime:"):
+                                                data["apache_uptime"] = int(
                                                     line.split(":")[1]
                                                 )
                                         data["webserver_type"] = "apache"
@@ -219,6 +257,8 @@ class WebserverAppDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                     error_lines = []
                     warning_lines = []
                     for line in logs.splitlines():
+                        if line in self._dismissed_logs:
+                            continue
                         lower_line = line.lower()
                         if "error" in lower_line:
                             error_lines.append(line)

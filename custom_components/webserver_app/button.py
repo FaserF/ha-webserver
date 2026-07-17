@@ -2,6 +2,7 @@ import logging
 
 from homeassistant.components.button import ButtonEntity
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.entity import DeviceInfo
@@ -22,7 +23,12 @@ async def async_setup_entry(
 ) -> None:
     """Set up the button platform."""
     coordinator = hass.data[DOMAIN][entry.entry_id]
-    async_add_entities([WebserverAppReloadButton(coordinator)])
+    async_add_entities(
+        [
+            WebserverAppReloadButton(coordinator),
+            WebserverAppResetLogsButton(coordinator),
+        ]
+    )
 
 
 class WebserverAppReloadButton(
@@ -64,3 +70,27 @@ class WebserverAppReloadButton(
             _LOGGER.error("Error calling Supervisor API for restart: %s", err)
 
         await self.coordinator.async_request_refresh()
+
+
+class WebserverAppResetLogsButton(
+    CoordinatorEntity[WebserverAppDataUpdateCoordinator], ButtonEntity
+):
+    """Button to reset log error and warning counts/lists in the integration."""
+
+    _attr_translation_key = "reset_logs"
+    _attr_has_entity_name = True
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+
+    def __init__(self, coordinator: WebserverAppDataUpdateCoordinator) -> None:
+        """Initialize."""
+        super().__init__(coordinator)
+        self.addon_slug = coordinator.addon_slug
+        self._attr_unique_id = f"{self.addon_slug}_reset_logs"
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, self.addon_slug)},
+        )
+
+    async def async_press(self) -> None:
+        """Handle the button press."""
+        _LOGGER.info("Resetting logged errors and warnings for addon %s", self.addon_slug)
+        self.coordinator.reset_logs()

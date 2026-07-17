@@ -40,6 +40,13 @@ async def async_setup_entry(
             WebserverAppRequestsSensor(coordinator),
             WebserverAppLogErrorsSensor(coordinator),
             WebserverAppLogWarningsSensor(coordinator),
+            WebserverAppNginxReadingSensor(coordinator),
+            WebserverAppNginxWritingSensor(coordinator),
+            WebserverAppNginxWaitingSensor(coordinator),
+            WebserverAppApacheIdleWorkersSensor(coordinator),
+            WebserverAppApacheBytesPerSecSensor(coordinator),
+            WebserverAppApacheReqPerSecSensor(coordinator),
+            WebserverAppApacheUptimeSensor(coordinator),
         ]
     )
 
@@ -110,6 +117,7 @@ class WebserverAppSSLExpirySensor(WebserverAppSensor):
                 name="SSL Expiry",
                 device_class=SensorDeviceClass.TIMESTAMP,
                 entity_category=EntityCategory.DIAGNOSTIC,
+                entity_registry_enabled_default=False,
             ),
         )
 
@@ -137,6 +145,7 @@ class WebserverAppSSLDaysSensor(WebserverAppSensor):
                 native_unit_of_measurement=UnitOfTime.DAYS,
                 state_class=SensorStateClass.MEASUREMENT,
                 entity_category=EntityCategory.DIAGNOSTIC,
+                entity_registry_enabled_default=False,
             ),
         )
 
@@ -208,6 +217,7 @@ class WebserverAppLogErrorsSensor(WebserverAppSensor):
                 icon="mdi:alert-circle",
                 state_class=SensorStateClass.MEASUREMENT,
                 entity_category=EntityCategory.DIAGNOSTIC,
+                entity_registry_enabled_default=False,
             ),
         )
 
@@ -235,6 +245,7 @@ class WebserverAppLogWarningsSensor(WebserverAppSensor):
                 icon="mdi:alert",
                 state_class=SensorStateClass.MEASUREMENT,
                 entity_category=EntityCategory.DIAGNOSTIC,
+                entity_registry_enabled_default=False,
             ),
         )
 
@@ -247,3 +258,223 @@ class WebserverAppLogWarningsSensor(WebserverAppSensor):
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return the state attributes."""
         return {"recent_warnings": self.coordinator.data.get("log_warnings_list", [])}
+
+
+class WebserverAppNginxReadingSensor(WebserverAppSensor):
+    """Sensor for Nginx reading connections."""
+
+    def __init__(self, coordinator: WebserverAppDataUpdateCoordinator) -> None:
+        """Initialize."""
+        super().__init__(
+            coordinator,
+            SensorEntityDescription(
+                key="nginx_reading",
+                name="Nginx Reading Connections",
+                icon="mdi:arrow-down-bold",
+                state_class=SensorStateClass.MEASUREMENT,
+                entity_registry_enabled_default=False,
+            ),
+        )
+
+    @property
+    def native_value(self) -> int | None:
+        """Return reading connections."""
+        return self.coordinator.data.get("nginx_reading")
+
+    @property
+    def available(self) -> bool:
+        """Return True if Nginx is running and connection details are available."""
+        return (
+            super().available
+            and self.coordinator.data.get("webserver_type") == "nginx"
+            and "nginx_reading" in self.coordinator.data
+        )
+
+
+class WebserverAppNginxWritingSensor(WebserverAppSensor):
+    """Sensor for Nginx writing connections."""
+
+    def __init__(self, coordinator: WebserverAppDataUpdateCoordinator) -> None:
+        """Initialize."""
+        super().__init__(
+            coordinator,
+            SensorEntityDescription(
+                key="nginx_writing",
+                name="Nginx Writing Connections",
+                icon="mdi:arrow-up-bold",
+                state_class=SensorStateClass.MEASUREMENT,
+                entity_registry_enabled_default=False,
+            ),
+        )
+
+    @property
+    def native_value(self) -> int | None:
+        """Return writing connections."""
+        return self.coordinator.data.get("nginx_writing")
+
+    @property
+    def available(self) -> bool:
+        """Return True if Nginx is running and connection details are available."""
+        return (
+            super().available
+            and self.coordinator.data.get("webserver_type") == "nginx"
+            and "nginx_writing" in self.coordinator.data
+        )
+
+
+class WebserverAppNginxWaitingSensor(WebserverAppSensor):
+    """Sensor for Nginx waiting connections."""
+
+    def __init__(self, coordinator: WebserverAppDataUpdateCoordinator) -> None:
+        """Initialize."""
+        super().__init__(
+            coordinator,
+            SensorEntityDescription(
+                key="nginx_waiting",
+                name="Nginx Waiting Connections",
+                icon="mdi:clock-outline",
+                state_class=SensorStateClass.MEASUREMENT,
+                entity_registry_enabled_default=False,
+            ),
+        )
+
+    @property
+    def native_value(self) -> int | None:
+        """Return waiting connections."""
+        return self.coordinator.data.get("nginx_waiting")
+
+    @property
+    def available(self) -> bool:
+        """Return True if Nginx is running and connection details are available."""
+        return (
+            super().available
+            and self.coordinator.data.get("webserver_type") == "nginx"
+            and "nginx_waiting" in self.coordinator.data
+        )
+
+
+class WebserverAppApacheIdleWorkersSensor(WebserverAppSensor):
+    """Sensor for Apache idle workers."""
+
+    def __init__(self, coordinator: WebserverAppDataUpdateCoordinator) -> None:
+        """Initialize."""
+        super().__init__(
+            coordinator,
+            SensorEntityDescription(
+                key="apache_idle_workers",
+                name="Apache Idle Workers",
+                icon="mdi:account-network-outline",
+                state_class=SensorStateClass.MEASUREMENT,
+                entity_registry_enabled_default=False,
+            ),
+        )
+
+    @property
+    def native_value(self) -> int | None:
+        """Return idle workers."""
+        return self.coordinator.data.get("apache_idle_workers")
+
+    @property
+    def available(self) -> bool:
+        """Return True if Apache is running and idle worker details are available."""
+        return (
+            super().available
+            and self.coordinator.data.get("webserver_type") == "apache"
+            and "apache_idle_workers" in self.coordinator.data
+        )
+
+
+class WebserverAppApacheBytesPerSecSensor(WebserverAppSensor):
+    """Sensor for Apache transfer rate."""
+
+    def __init__(self, coordinator: WebserverAppDataUpdateCoordinator) -> None:
+        """Initialize."""
+        super().__init__(
+            coordinator,
+            SensorEntityDescription(
+                key="apache_bytes_per_sec",
+                name="Apache Throughput",
+                icon="mdi:transfer",
+                native_unit_of_measurement="B/s",
+                state_class=SensorStateClass.MEASUREMENT,
+                entity_registry_enabled_default=False,
+            ),
+        )
+
+    @property
+    def native_value(self) -> float | None:
+        """Return transfer rate in bytes per second."""
+        return self.coordinator.data.get("apache_bytes_per_sec")
+
+    @property
+    def available(self) -> bool:
+        """Return True if Apache is running and transfer rate is available."""
+        return (
+            super().available
+            and self.coordinator.data.get("webserver_type") == "apache"
+            and "apache_bytes_per_sec" in self.coordinator.data
+        )
+
+
+class WebserverAppApacheReqPerSecSensor(WebserverAppSensor):
+    """Sensor for Apache request rate."""
+
+    def __init__(self, coordinator: WebserverAppDataUpdateCoordinator) -> None:
+        """Initialize."""
+        super().__init__(
+            coordinator,
+            SensorEntityDescription(
+                key="apache_req_per_sec",
+                name="Apache Request Rate",
+                icon="mdi:speedometer",
+                native_unit_of_measurement="req/s",
+                state_class=SensorStateClass.MEASUREMENT,
+                entity_registry_enabled_default=False,
+            ),
+        )
+
+    @property
+    def native_value(self) -> float | None:
+        """Return request rate."""
+        return self.coordinator.data.get("apache_req_per_sec")
+
+    @property
+    def available(self) -> bool:
+        """Return True if Apache is running and request rate is available."""
+        return (
+            super().available
+            and self.coordinator.data.get("webserver_type") == "apache"
+            and "apache_req_per_sec" in self.coordinator.data
+        )
+
+
+class WebserverAppApacheUptimeSensor(WebserverAppSensor):
+    """Sensor for Apache server uptime."""
+
+    def __init__(self, coordinator: WebserverAppDataUpdateCoordinator) -> None:
+        """Initialize."""
+        super().__init__(
+            coordinator,
+            SensorEntityDescription(
+                key="apache_uptime",
+                name="Apache Uptime",
+                icon="mdi:clock-start",
+                native_unit_of_measurement=UnitOfTime.SECONDS,
+                state_class=SensorStateClass.MEASUREMENT,
+                entity_registry_enabled_default=False,
+            ),
+        )
+
+    @property
+    def native_value(self) -> int | None:
+        """Return uptime in seconds."""
+        return self.coordinator.data.get("apache_uptime")
+
+    @property
+    def available(self) -> bool:
+        """Return True if Apache is running and uptime is available."""
+        return (
+            super().available
+            and self.coordinator.data.get("webserver_type") == "apache"
+            and "apache_uptime" in self.coordinator.data
+        )
