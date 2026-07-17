@@ -1,6 +1,6 @@
 [project]
 name = "ha-webserver"
-version = "1.0.1-dev0"
+version = "1.1.1-dev0"
 description = "Home Assistant integration for webserver application."
 authors = [
     {name = "FaserF", email = "github@fabiseitz.de"}

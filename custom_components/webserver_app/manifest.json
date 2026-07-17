@@ -12,5 +12,5 @@
   "integration_type": "hub",
   "iot_class": "local_polling",
   "issue_tracker": "https://github.com/FaserF/ha-webserver/issues",
-  "version": "1.0.1-dev0"
+  "version": "1.1.1-dev0"
 }
