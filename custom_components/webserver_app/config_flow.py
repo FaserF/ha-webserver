@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
-from typing import Any
+from typing import Any, cast
 
-import async_timeout
 import voluptuous as vol
 from homeassistant.config_entries import (
     ConfigEntry,
@@ -57,7 +57,7 @@ class WebserverAppConfigFlow(ConfigFlow, domain=DOMAIN):
 
             try:
                 url = f"http://supervisor/addons/{target_slug}/info"
-                async with async_timeout.timeout(10):
+                async with asyncio.timeout(10):
                     resp = await session.get(url, headers=headers)
                     if resp.status == 404:
                         list_resp = await session.get(
@@ -107,7 +107,7 @@ class WebserverAppConfigFlow(ConfigFlow, domain=DOMAIN):
             session = async_get_clientsession(self.hass)
             headers = {"X-Supervisor-Token": token} if token else {}
 
-            async with async_timeout.timeout(10):
+            async with asyncio.timeout(10):
                 _LOGGER.debug(
                     "ConfigFlow: Calling Supervisor API http://supervisor/addons"
                 )
@@ -162,7 +162,7 @@ class WebserverAppConfigFlow(ConfigFlow, domain=DOMAIN):
 
         return self.async_show_form(
             step_id="user",
-            data_schema=data_schema,
+            data_schema=cast(Any, data_schema),
             errors=errors,
             description_placeholders={"detected": ", ".join(display_addons)},
         )
@@ -235,4 +235,6 @@ class WebserverAppOptionsFlowHandler(OptionsFlow):
             }
         )
 
-        return self.async_show_form(step_id="init", data_schema=options_schema)
+        return self.async_show_form(
+            step_id="init", data_schema=cast(Any, options_schema)
+        )

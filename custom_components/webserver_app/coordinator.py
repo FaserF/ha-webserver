@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import aiohttp
-import async_timeout
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
@@ -74,7 +74,7 @@ class WebserverAppDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         try:
             # 1. Fetch Addon Info via Supervisor API
             url = f"http://supervisor/addons/{self.addon_slug}/info"
-            async with async_timeout.timeout(10):
+            async with asyncio.timeout(10):
                 resp = await session.get(url, headers=headers)
                 if resp.status == 404:
                     _LOGGER.debug(
@@ -159,7 +159,7 @@ class WebserverAppDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         hostname = data.get("ip_address") or self.addon_slug.replace("_", "-")
 
         try:
-            async with async_timeout.timeout(5):
+            async with asyncio.timeout(5):
                 async with aiohttp.ClientSession() as session:
                     if "nginx" in self.addon_slug:
                         # Nginx (port 8080 as configured in nginx.sh)
@@ -250,7 +250,7 @@ class WebserverAppDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             # Supervisor API URL for logs
             url = f"http://supervisor/addons/{self.addon_slug}/logs"
 
-            async with async_timeout.timeout(5):
+            async with asyncio.timeout(5):
                 resp = await session.get(url, headers=headers)
                 if resp.status == 200:
                     logs = await resp.text()
